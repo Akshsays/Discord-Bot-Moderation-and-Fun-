@@ -15,13 +15,15 @@ class Suggestions(commands.Cog):
         
         suggestion_message=message
         suggestionembed=discord.Embed(
-            title=f"{interaction.user.name} - {interaction.user.id}",
+            title=f"Suggestion",
+            description=suggestion_message,
             timestamp=discord.utils.utcnow(),
             colour=discord.Colour.green()
         )
 
-        suggestionembed.add_field(name="Suggestion",value=suggestion_message)
+        icon=interaction.user.display_avatar.url
         suggestionembed.set_footer(text=f"Report ID: {interaction.id} | Sumbitted at")
+        suggestionembed.set_author(name=f"{interaction.user.name} - {interaction.user.id}",icon_url=icon)
 
         suggestion_channel=1510966998824124527
         log_channel=interaction.guild.get_channel(suggestion_channel)
@@ -41,12 +43,16 @@ class Suggestions(commands.Cog):
             if message.channel.id==suggestion_channel:
                     store_suggestion=message.content
                     Suggestions_embed=discord.Embed(
-                        title=f"{message.author.name} - {message.author.id}",
+                        title="Suggestion",
+                        description=store_suggestion,
                         timestamp=discord.utils.utcnow(),
                         colour=discord.Colour.green()
                     )
-                    Suggestions_embed.add_field(name="Suggestion",value=store_suggestion)
+                    
+                    icon=message.author.display_avatar
                     Suggestions_embed.set_footer(text=f"Report ID: {message.id} | Sumbitted at")
+                    Suggestions_embed.set_author(name=f"{message.author.name} - {message.author.id}",icon_url=icon)
+                    
 
                     await message.delete()
                     sent_message=await message.channel.send(embed=Suggestions_embed)
