@@ -1,8 +1,8 @@
 import discord 
 import datetime
-import database 
+import utls.database 
 import traceback
-from database import init_table,set_report_channel,get_report_channel
+from utls.database import init_table,set_report_channel,get_report_channel
 from discord.ext import commands
 from discord import app_commands
 
@@ -29,7 +29,7 @@ class Report(commands.Cog):
 
         log_channel=interaction.guild.get_channel(report_channel) # get the channel object for specific id
 
-        await interaction.response.send_message(f"Current report config channel is- {log_channel.mention}")
+        await interaction.response.send_message(f"Current report config channel is- {log_channel.mention}",ephemeral=True)
 
 
     @app_commands.command(name="report", description="Report the user")
@@ -49,11 +49,14 @@ class Report(commands.Cog):
         try:
             if interaction.guild: # if guild exist 
                 target_channel_id=get_report_channel(int(interaction.guild.id)) # call the get report function to access the report_channel id
+                return
             else:
                 await interaction.response.send_message("Command can only be run in guild")
+                return
 
             if not target_channel_id: # if target channel id row not found
                 await interaction.response.send_message(f"Channel not configured",ephemeral=True)
+                return
                 
             log_channel=interaction.guild.get_channel(target_channel_id) # get the channel object for report channel
 
