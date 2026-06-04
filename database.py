@@ -33,12 +33,15 @@ def get_report_channel(guild_id:int):
     cursor=con.cursor()
 
     query="SELECT report_channel from report_channels where guild_id=?"
-    cursor.execute(query,(guild_id))
+    cursor.execute(query,(int(guild_id),))
 
-    result=cursor.fetchone()
+    result=cursor.fetchone() # fetch the row
+    value = int(result[0]) # convert the result from tuple to int 
     cursor.close()
 
-    if result:
-        return result
+    if value:
+        channel_id=value
+
+        return int(channel_id) if channel_id is not None else None
     else:
         return None
