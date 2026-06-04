@@ -10,16 +10,26 @@ from discord import app_commands
 class Report(commands.Cog):
     def __init__(self,bot):
         self.bot=bot
-        init_table()
+        init_table() # call table function to create a empty table it 
 
 
     @app_commands.command(name="reportconfig",description="Configure report channel")
     @app_commands.describe(channel="Set report channel")
     async def reportconfig(self,interaction:discord.Interaction,channel:discord.TextChannel):
 
-            set_report_channel(interaction.guild.id,channel.id)
+            set_report_channel(interaction.guild.id,channel.id) # call set_report_channel function to set desired channel
 
             await interaction.response.send_message(f"Report channel set to {channel.mention}",ephemeral=True)
+
+    
+    @app_commands.command(name="view-report-channel",description="Get the configured channel for reports")
+    async def viewconfig(self,interaction:discord.Interaction):
+
+        report_channel=get_report_channel(interaction.guild.id) # access the report channel by calling get_report_channel
+
+        log_channel=interaction.guild.get_channel(report_channel) # get the channel object for specific id
+
+        await interaction.response.send_message(f"Current report config channel is- {log_channel.mention}")
 
 
     @app_commands.command(name="report", description="Report the user")
@@ -37,18 +47,26 @@ class Report(commands.Cog):
         
 
         try:
-            if interaction.guild:
-                target_channel_id=get_report_channel(int(interaction.guild.id))
+            if interaction.guild: # if guild exist 
+                target_channel_id=get_report_channel(int(interaction.guild.id)) # call the get report function to access the report_channel id
             else:
                 await interaction.response.send_message("Command can only be run in guild")
 
-            if not target_channel_id:
+            if not target_channel_id: # if target channel id row not found
                 await interaction.response.send_message(f"Channel not configured",ephemeral=True)
                 
-            log_channel=interaction.guild.get_channel(target_channel_id)
+            log_channel=interaction.guild.get_channel(target_channel_id) # get the channel object for report channel
 
-            if not log_channel:
-                target_channel=interaction.guild.fetch_channel(log_channel)
+            if not log_channel: # if channel not found 
+                try:
+
+                    target_channel= await interaction.guild.fetch_channel(log_channel) # fetch from guild cache 
+                except discord.NotFound:
+                    await interaction.response.send_message("Please re-configure because channel is deleted",ephemeral=True)
+                    return
+                except discord.Forbidden:
+                    await interaction.response.send_message("I don't have permissions to access the channel",ephemeral=True)
+                    return
 
         except Exception as e:
             error = e
@@ -67,11 +85,10 @@ class Report(commands.Cog):
         
         report_embed.add_field(name="Message / Evidence",value=message_link)
         report_embed.set_footer(text=f"Report ID: {interaction.id}")
-        report_embed.set_author(name={interaction.user.name},icon_url=None)
 
         try:
-            await target_channel.send(embed=report_embed)
-            await interaction.response.send(f"Succesfully reported {user.mention}",ephemeral=True)
+            await log_channel.send(embed=report_embed)
+            await interaction.response.send_message(f"Succesfully reported {user.mention}",ephemeral=True)
 
         except Exception as e:
             print(e)
@@ -80,7 +97,7 @@ class Report(commands.Cog):
             formatted_tb = "\n" + "".join(tb) + "\n"
             print(formatted_tb)
             if not interaction.response.is_done():
-                await interaction.response.send_message("Something went wrong")
+                await interaction.response.send_message("Something went wrong",ephemeral=True)
 
 
 async def setup(bot):
