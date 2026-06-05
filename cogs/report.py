@@ -1,8 +1,8 @@
 import discord 
 import datetime
-import utls.database 
+import utls.reportconfig 
 import traceback
-from utls.database import init_table,set_report_channel,get_report_channel
+from utls.reportconfig import init_table,set_report_channel,get_report_channel
 from discord.ext import commands
 from discord import app_commands
 

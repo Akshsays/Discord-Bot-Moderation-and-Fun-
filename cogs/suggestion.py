@@ -1,8 +1,8 @@
 import discord
 import datetime
 import traceback
-import utls.suggestiondb
-from utls.suggestiondb import init_table,set_suggestion_channel,get_suggestion_channel
+import utls.suggestionconfig
+from utls.suggestionconfig import init_table,set_suggestion_channel,get_suggestion_channel
 from discord.ext import commands
 from discord import app_commands
 
