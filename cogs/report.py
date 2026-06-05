@@ -48,8 +48,7 @@ class Report(commands.Cog):
 
         try:
             if interaction.guild: # if guild exist 
-                target_channel_id=get_report_channel(int(interaction.guild.id)) # call the get report function to access the report_channel id
-                return
+                target_channel_id=get_report_channel(interaction.guild.id) # call the get report function to access the report_channel id
             else:
                 await interaction.response.send_message("Command can only be run in guild")
                 return
@@ -63,7 +62,7 @@ class Report(commands.Cog):
             if not log_channel: # if channel not found 
                 try:
 
-                    target_channel= await interaction.guild.fetch_channel(log_channel) # fetch from guild cache 
+                    target_channel= await interaction.guild.fetch_channel(target_channel_id) # fetch from guild cache 
                 except discord.NotFound:
                     await interaction.response.send_message("Please re-configure because channel is deleted",ephemeral=True)
                     return
@@ -88,6 +87,13 @@ class Report(commands.Cog):
         
         report_embed.add_field(name="Message / Evidence",value=message_link)
         report_embed.set_footer(text=f"Report ID: {interaction.id}")
+
+        try:
+            await interaction.user.send(f"Thanks for reporting {user.mention}, your report copy attached below",embed=report_embed)
+        except discord.Forbidden:
+            pass
+        except Exception as e:
+            print(e)
 
         try:
             await log_channel.send(embed=report_embed)
