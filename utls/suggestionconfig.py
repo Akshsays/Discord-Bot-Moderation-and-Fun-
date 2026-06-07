@@ -42,6 +42,6 @@ def get_suggestion_channel(guild_id:int):
     if value:
         channel_id=value
 
-        return int(channel_id) if channel_id is not None else None
+        return int(channel_id)
     else:
         return None
