@@ -29,11 +29,7 @@ class Report(commands.Cog):
 
         log_channel=interaction.guild.get_channel(report_channel) # get the channel object for specific id
 
-<<<<<<< HEAD
-        await interaction.response.send_message(f"Current report config channel is- {log_channel.mention}")
-=======
         await interaction.response.send_message(f"Current report config channel is- {log_channel.mention}",ephemeral=True)
->>>>>>> main
 
 
     @app_commands.command(name="report", description="Report the user")
@@ -52,11 +48,7 @@ class Report(commands.Cog):
 
         try:
             if interaction.guild: # if guild exist 
-<<<<<<< HEAD
-                target_channel_id=get_report_channel(int(interaction.guild.id)) # call the get report function to access the report_channel id
-=======
                 target_channel_id=get_report_channel(interaction.guild.id) # call the get report function to access the report_channel id
->>>>>>> main
             else:
                 await interaction.response.send_message("Command can only be run in guild")
                 return
@@ -70,11 +62,7 @@ class Report(commands.Cog):
             if not log_channel: # if channel not found 
                 try:
 
-<<<<<<< HEAD
-                    target_channel= await interaction.guild.fetch_channel(log_channel) # fetch from guild cache 
-=======
                     target_channel= await interaction.guild.fetch_channel(target_channel_id) # fetch from guild cache 
->>>>>>> main
                 except discord.NotFound:
                     await interaction.response.send_message("Please re-configure because channel is deleted",ephemeral=True)
                     return
@@ -101,8 +89,6 @@ class Report(commands.Cog):
         report_embed.set_footer(text=f"Report ID: {interaction.id}")
 
         try:
-<<<<<<< HEAD
-=======
             await interaction.user.send(f"Thanks for reporting {user.mention}, your report copy attached below",embed=report_embed)
         except discord.Forbidden:
             pass
@@ -110,7 +96,6 @@ class Report(commands.Cog):
             print(e)
 
         try:
->>>>>>> main
             await log_channel.send(embed=report_embed)
             await interaction.response.send_message(f"Succesfully reported {user.mention}",ephemeral=True)
 
