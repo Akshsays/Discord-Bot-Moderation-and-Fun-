@@ -24,9 +24,9 @@ class ButtonCog(commands.Cog):
             if comp_choice=="Rock":
                 await interaction.response.send_message("Well we tied", ephemeral=True)
             elif comp_choice=="Paper":
-                await interaction.response.send_message("Computer win", ephemeral=True)
+                await interaction.response.send_message("Computer won", ephemeral=True)
             elif comp_choice=="Scissor":
-                await interaction.response.send_message("ggs you won", ephemeral=True)
+                await interaction.response.send_message("You won", ephemeral=True)
 
         
         @discord.ui.button(label="Paper", style=discord.ButtonStyle.primary,emoji="🗞️")
@@ -38,9 +38,9 @@ class ButtonCog(commands.Cog):
             if comp_choice=="Paper":
                 await interaction.response.send_message("Well we tied", ephemeral=True)
             elif comp_choice=="Rock":
-                await interaction.response.send_message("ggs you win", ephemeral=True)
+                await interaction.response.send_message("You won", ephemeral=True)
             elif comp_choice=="Scissor":
-                await interaction.response.send_message("computer won", ephemeral=True)
+                await interaction.response.send_message("Computer won", ephemeral=True)
         
         @discord.ui.button(label="Scissor", style=discord.ButtonStyle.primary,emoji="✂️")
         async def Rock_Button(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -49,9 +49,9 @@ class ButtonCog(commands.Cog):
             comp_choice=random.choice(c)
 
             if comp_choice=="Rock":
-                await interaction.response.send_message("computer won", ephemeral=True)
+                await interaction.response.send_message("Computer won", ephemeral=True)
             elif comp_choice=="Paper":
-                await interaction.response.send_message("ggs you win", ephemeral=True)
+                await interaction.response.send_message("You won", ephemeral=True)
             elif comp_choice=="Scissor":
                 await interaction.response.send_message("Well we tied", ephemeral=True)
 
