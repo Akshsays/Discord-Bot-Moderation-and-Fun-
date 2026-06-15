@@ -2,7 +2,7 @@ import discord
 import datetime
 import utls.reportconfig 
 import traceback
-from utls.reportconfig import init_table,set_report_channel,get_report_channel
+from utls.reportconfig import init_table,init_member,set_report_channel,get_report_channel,get_user,set_member
 from discord.ext import commands
 from discord import app_commands
 
@@ -11,9 +11,50 @@ class Report(commands.Cog):
     def __init__(self,bot):
         self.bot=bot
         init_table() # call table function to create a empty table it 
+        init_member()
+
+    class MyView(discord.ui.View):
+        def __init__(self):
+            super().__init__(timeout=180) # Optional timeout
+
+        @discord.ui.button(label="Accept", style=discord.ButtonStyle.primary,emoji="✅")
+        async def accept(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+            try:
+                target=get_user(interaction.guild.id)
+                user=interaction.guild.get_member(target)
+                if user is None:
+                    user=await interaction.guild.fetch_member(target)
+                if user:
+                    await user.send(f"hey {user.mention} your report has been accepted")
+                    await interaction.response.send_message("Report processed",ephemeral=True)
+            except discord.Forbidden:
+                pass
+            except Exception as e:
+                print(e)
 
 
-    @app_commands.command(name="reportconfig",description="Configure report channel")
+        @discord.ui.button(label="Decline", style=discord.ButtonStyle.primary,emoji="❌")
+        async def decline(self, interaction: discord.Interaction, button: discord.ui.Button):
+            try:
+                target=get_user(interaction.guild.id)   
+                user=interaction.guild.get_member(target)
+                if user is None:
+                    user=await interaction.guild.fetch_member(target)
+                else:
+                    pass
+                if user:
+                    await user.send(f"hey {user.mention} your report has been declined")
+                    await interaction.response.send_message("Report processed",ephemeral=True)  
+            except discord.Forbidden:
+                pass
+            except Exception as e:
+                print(e)
+        
+
+    @app_commands.command(name="report-config",description="Configure report channel")
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.default_permissions(administrator=True)
     @app_commands.describe(channel="Set report channel")
     async def reportconfig(self,interaction:discord.Interaction,channel:discord.TextChannel):
 
@@ -23,6 +64,8 @@ class Report(commands.Cog):
 
     
     @app_commands.command(name="view-report-channel",description="Get the configured channel for reports")
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.default_permissions(administrator=True)
     async def viewconfig(self,interaction:discord.Interaction):
 
         report_channel=get_report_channel(interaction.guild.id) # access the report channel by calling get_report_channel
@@ -44,9 +87,8 @@ class Report(commands.Cog):
             await interaction.response.send_message("Can't report a application",ephemeral=True)
             return
 
-        
-
         try:
+            reporter=set_member(interaction.guild.id,interaction.user.id)
             if interaction.guild: # if guild exist 
                 target_channel_id=get_report_channel(interaction.guild.id) # call the get report function to access the report_channel id
             else:
@@ -89,14 +131,14 @@ class Report(commands.Cog):
         report_embed.set_footer(text=f"Report ID: {interaction.id}")
 
         try:
-            await interaction.user.send(f"Thanks for reporting {user.mention}, your report copy attached below",embed=report_embed)
+            await interaction.user.send(f"Thanks for reporting {user.mention}",embed=report_embed)
         except discord.Forbidden:
             pass
         except Exception as e:
             print(e)
 
         try:
-            await log_channel.send(embed=report_embed)
+            await log_channel.send(embed=report_embed,view=self.MyView())
             await interaction.response.send_message(f"Succesfully reported {user.mention}",ephemeral=True)
 
         except Exception as e:
