@@ -2,9 +2,10 @@ import discord
 import datetime
 import traceback
 import utls.suggestionconfig
-from utls.suggestionconfig import init_table,set_suggestion_channel,get_suggestion_channel
+from utls.suggestionconfig import init_table,init_member,store_info,get_info,set_suggestion_channel,get_suggestion_channel
 from discord.ext import commands
 from discord import app_commands
+from discord import ui
 
 
 class Suggestions(commands.Cog):
@@ -12,8 +13,55 @@ class Suggestions(commands.Cog):
     def __init__(self,bot):
         self.bot=bot
         init_table()
+        init_member()
+
+    class MyView(discord.ui.View):
+
+        def __init__(self):
+            super().__init__(timeout=180)
+
+        class MyModal(discord.ui.Modal):
+            reason=discord.ui.TextInput(
+            label="Reason",
+            placeholder="Enter reason...",
+            max_length=1000
+            )
+            def __init__(self):
+                super().__init__(title="Suggestion form")
+
+            async def on_submit(self, interaction: discord.Interaction):
+
+                embed = discord.Embed(color=discord.Color.green())
+                embed.add_field(name="Reason", value=self.reason.value)
+                try:
+                    target=get_info(interaction.guild.id)
+                    dm_user=interaction.guild.get_member(target)
+                    if dm_user is None:
+                        user=await interaction.guild.fetch_member(target)
+                    if user:
+                        await user.send(f"Hey {user.mention}, your suggestion",embed=embed)
+                        await interaction.response.send_message("Suggestion updated",ephemeral=True)
+                except discord.Forbidden:
+                    pass
+                except Exception as e:
+                    print(e)
+
+        @discord.ui.button(label="Accept",style=discord.ButtonStyle.success)
+        async def accept(self,interaction:discord.Interaction, button:discord.ui.Button):
+            await interaction.response.send_modal(self.MyModal())
+
+        @discord.ui.button(label="Consider",style=discord.ButtonStyle.secondary)
+        async def consider(self,interaction:discord.Interaction, button:discord.ui.Button):
+            await interaction.response.send_modal(self.MyModal())
+
+        @discord.ui.button(label="Decline",style=discord.ButtonStyle.red)
+        async def decline(self,interaction:discord.Interaction, button:discord.ui.Button):
+            await interaction.response.send_modal(self.MyModal())
+
 
     @app_commands.command(name="suggestion-config",description="Configure suggestion channel")
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.default_permissions(administrator=True)
     @app_commands.describe(channel="Set suggestion channel")
     async def suggestionconfig(self,interaction:discord.Interaction,channel:discord.TextChannel):
 
@@ -22,6 +70,8 @@ class Suggestions(commands.Cog):
         await interaction.response.send_message(f"Report channel set to {channel.mention}",ephemeral=True)
 
     @app_commands.command(name="view-suggestion-config",description="Get the configured channel for suggestion")
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.default_permissions(administrator=True)
     async def viewconfig(self,interaction:discord.Interaction):
 
         suggestion_channel=get_suggestion_channel(interaction.guild.id) # access the report channel by calling get_report_channel
@@ -36,7 +86,7 @@ class Suggestions(commands.Cog):
 
 
         try:
-
+            info=store_info(interaction.guild.id,interaction.user.id,interaction.id)
             if interaction.guild:
                 target_channel_id=get_suggestion_channel(interaction.guild.id)
             else:
@@ -81,7 +131,7 @@ class Suggestions(commands.Cog):
         suggestionembed.set_author(name=f"{interaction.user.name} - {interaction.user.id}",icon_url=icon)
 
         try:
-            sent_message=await log_channel.send(embed=suggestionembed)
+            sent_message=await log_channel.send(embed=suggestionembed,view=self.MyView())
             await interaction.response.send_message(f"Suggestion succesfully submitted",ephemeral=True)
             await sent_message.create_thread(name="Suggestion Thread")
         
