@@ -26,12 +26,21 @@ class Suggestions(commands.Cog):
             placeholder="Enter reason...",
             max_length=1000
             )
-            def __init__(self):
-                super().__init__(title="Suggestion form")
+            def __init__(self,title):
+                self.title=title
+                super().__init__(title=title)
 
             async def on_submit(self, interaction: discord.Interaction):
 
-                embed = discord.Embed(color=discord.Color.green())
+                if self.title=="Suggestion Accepted":
+                    color=discord.Color.green()
+                elif self.title=="Suggestion Considered":
+                    color=discord.Color.yellow()
+                else:
+                    color=discord.Color.red()
+
+                embed = discord.Embed(title="Suggestion review",description=f"**{self.title} by {interaction.user.global_name}**",color=color)
+                embed.add_field(name="Status", value=self.title)
                 embed.add_field(name="Reason", value=self.reason.value)
                 try:
                     target=get_info(interaction.guild.id)
@@ -39,7 +48,7 @@ class Suggestions(commands.Cog):
                     if dm_user is None:
                         user=await interaction.guild.fetch_member(target)
                     if user:
-                        await user.send(f"Hey {user.mention}, your suggestion",embed=embed)
+                        await user.send(embed=embed)
                         await interaction.response.send_message("Suggestion updated",ephemeral=True)
                 except discord.Forbidden:
                     pass
@@ -48,15 +57,15 @@ class Suggestions(commands.Cog):
 
         @discord.ui.button(label="Accept",style=discord.ButtonStyle.success)
         async def accept(self,interaction:discord.Interaction, button:discord.ui.Button):
-            await interaction.response.send_modal(self.MyModal())
+            await interaction.response.send_modal(self.MyModal("Suggestion Accepted"))
 
         @discord.ui.button(label="Consider",style=discord.ButtonStyle.secondary)
         async def consider(self,interaction:discord.Interaction, button:discord.ui.Button):
-            await interaction.response.send_modal(self.MyModal())
+            await interaction.response.send_modal(self.MyModal("Suggestion Considered"))
 
         @discord.ui.button(label="Decline",style=discord.ButtonStyle.red)
         async def decline(self,interaction:discord.Interaction, button:discord.ui.Button):
-            await interaction.response.send_modal(self.MyModal())
+            await interaction.response.send_modal(self.MyModal("Suggestion Declined"))
 
 
     @app_commands.command(name="suggestion-config",description="Configure suggestion channel")
