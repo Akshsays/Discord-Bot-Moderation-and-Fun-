@@ -2,7 +2,7 @@ import discord
 import datetime
 import traceback
 import utls.suggestionconfig
-from utls.suggestionconfig import init_table,init_member,store_info,get_info,set_suggestion_channel,get_suggestion_channel
+from utls.suggestionconfig import init_table,store_info,get_info,set_suggestion_channel,get_suggestion_channel
 from discord.ext import commands
 from discord import app_commands
 from discord import ui
@@ -13,7 +13,7 @@ class Suggestions(commands.Cog):
     def __init__(self,bot):
         self.bot=bot
         init_table()
-        init_member()
+        # init_member()
 
     class MyView(discord.ui.View):
 
