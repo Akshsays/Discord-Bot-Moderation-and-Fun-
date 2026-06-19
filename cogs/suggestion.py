@@ -2,7 +2,7 @@ import discord
 import datetime
 import traceback
 import utls.suggestionconfig
-from utls.suggestionconfig import init_table,store_info,get_info,set_suggestion_channel,get_suggestion_channel
+from utls.suggestionconfig import init_table,store_info,get_info,review_info,set_suggestion_channel,get_suggestion_channel
 from discord.ext import commands
 from discord import app_commands
 from discord import ui
@@ -13,7 +13,6 @@ class Suggestions(commands.Cog):
     def __init__(self,bot):
         self.bot=bot
         init_table()
-        # init_member()
 
     class MyView(discord.ui.View):
 
@@ -57,6 +56,7 @@ class Suggestions(commands.Cog):
 
         @discord.ui.button(label="Accept",style=discord.ButtonStyle.success)
         async def accept(self,interaction:discord.Interaction, button:discord.ui.Button):
+            review=review_info(interaction.guild.id,interaction.user.id,"Suggestion Accepted")
             await interaction.response.send_modal(self.MyModal("Suggestion Accepted"))
 
         @discord.ui.button(label="Consider",style=discord.ButtonStyle.secondary)
@@ -95,7 +95,7 @@ class Suggestions(commands.Cog):
 
 
         try:
-            info=store_info(interaction.guild.id,interaction.user.id,interaction.id)
+            info=store_info(interaction.guild.id,suggestion,interaction.user.id,interaction.id)
             if interaction.guild:
                 target_channel_id=get_suggestion_channel(interaction.guild.id)
             else:
