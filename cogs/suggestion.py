@@ -56,7 +56,6 @@ class Suggestions(commands.Cog):
 
         @discord.ui.button(label="Accept",style=discord.ButtonStyle.success)
         async def accept(self,interaction:discord.Interaction, button:discord.ui.Button):
-            review=review_info(interaction.guild.id,interaction.user.id,"Suggestion Accepted")
             await interaction.response.send_modal(self.MyModal("Suggestion Accepted"))
 
         @discord.ui.button(label="Consider",style=discord.ButtonStyle.secondary)
