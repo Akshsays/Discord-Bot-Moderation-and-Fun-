@@ -2,7 +2,7 @@ import discord
 import datetime
 import traceback
 import utls.suggestionconfig
-from utls.suggestionconfig import init_table,store_info,get_info,set_suggestion_channel,get_suggestion_channel
+from utls.suggestionconfig import init_table,store_info,review_info,get_info,store_suggestion_messageid,get_message_id,set_suggestion_channel,get_suggestion_channel,get_suggestion_message
 from discord.ext import commands
 from discord import app_commands
 from discord import ui
@@ -133,7 +133,7 @@ class Suggestions(commands.Cog):
 
 
         try:
-            info=store_info(interaction.guild.id,interaction.user.id,interaction.id)
+            info=store_info(interaction.guild.id,suggestion,interaction.user.id)
             if interaction.guild:
                 target_channel_id=get_suggestion_channel(interaction.guild.id)
             else:
