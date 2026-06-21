@@ -2,7 +2,7 @@ import discord
 import datetime
 import traceback
 import utls.suggestionconfig
-from utls.suggestionconfig import init_table,store_info,get_info,set_suggestion_channel,get_suggestion_channel
+from utls.suggestionconfig import init_table,store_info,review_info,get_info,store_suggestion_messageid,get_message_id,set_suggestion_channel,get_suggestion_channel,get_suggestion_message
 from discord.ext import commands
 from discord import app_commands
 from discord import ui
@@ -13,7 +13,6 @@ class Suggestions(commands.Cog):
     def __init__(self,bot):
         self.bot=bot
         init_table()
-        # init_member()
 
     class MyView(discord.ui.View):
 
@@ -42,6 +41,44 @@ class Suggestions(commands.Cog):
                 embed = discord.Embed(title="Suggestion review",description=f"**{self.title} by {interaction.user.global_name}**",color=color)
                 embed.add_field(name="Status", value=self.title)
                 embed.add_field(name="Reason", value=self.reason.value)
+
+                review_status=self.title
+                review_reason=self.reason.value
+                suggester_id=get_info(interaction.guild.id)
+                message=get_suggestion_message(interaction.guild.id)
+                message_id=get_message_id(interaction.guild.id)
+                channel_id=get_suggestion_channel(interaction.guild.id)
+
+                reviwer=review_info(interaction.guild.id,interaction.user.id,review_status,review_reason)
+
+                new_suggestion_embed=discord.Embed(
+                    title="Suggestion",
+                    description=f"{message} \n **{review_status} by {interaction.user.global_name}**",
+                    color=color
+                )
+                
+                new_suggestion_embed.add_field(name="Status:",value=review_status)
+                new_suggestion_embed.add_field(name="Reason:",value=review_reason)
+                try:
+                    
+                    log_channel=interaction.guild.get_channel(channel_id)
+
+                    if not log_channel:
+                        try:
+                            target= await interaction.guild.fetch_channel(channel_id)
+                        except Exception as e:
+                            pass
+                    try:
+                        sug_message= await log_channel.fetch_message(message_id)
+                    except Exception as e:
+                        print(e)
+
+                    await sug_message.edit(embed=new_suggestion_embed)
+
+                except Exception as e:
+                    print(e)
+
+
                 try:
                     target=get_info(interaction.guild.id)
                     dm_user=interaction.guild.get_member(target)
@@ -50,6 +87,7 @@ class Suggestions(commands.Cog):
                     if user:
                         await user.send(embed=embed)
                         await interaction.response.send_message("Suggestion updated",ephemeral=True)
+                        
                 except discord.Forbidden:
                     pass
                 except Exception as e:
@@ -95,7 +133,7 @@ class Suggestions(commands.Cog):
 
 
         try:
-            info=store_info(interaction.guild.id,interaction.user.id,interaction.id)
+            info=store_info(interaction.guild.id,suggestion,interaction.user.id)
             if interaction.guild:
                 target_channel_id=get_suggestion_channel(interaction.guild.id)
             else:
@@ -142,7 +180,8 @@ class Suggestions(commands.Cog):
         try:
             sent_message=await log_channel.send(embed=suggestionembed,view=self.MyView())
             await interaction.response.send_message(f"Suggestion succesfully submitted",ephemeral=True)
-            await sent_message.create_thread(name="Suggestion Thread")
+            message_id=store_suggestion_messageid(interaction.guild.id,sent_message.id)
+            # await sent_message.create_thread(name="Suggestion Thread")
         
         except Exception as e:
             print(e)
